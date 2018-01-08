@@ -35,12 +35,12 @@ namespace Sino.OnlineMarket.Repositories.Repository
         }
 
        /// <summary>
-       /// 购买商品
+       /// 购买单个商品
        /// </summary>
        /// <param name="Userid">用户编号</param>
        /// <param name="Goodsid">商品编码</param>
        /// <returns></returns>
-        public async Task<int> AlterBuyGoods(int Userid, string Goodsid)
+        public async Task<int> AlterBuyGoodsSingle(int Userid, string Goodsid)
         {
             int count = 0;
             try
@@ -70,6 +70,42 @@ namespace Sino.OnlineMarket.Repositories.Repository
             return count;
         }
 
+        /// <summary>
+        /// 购买全部商品
+        /// </summary>
+        /// <param name="Userid">用户编号</param>
+        /// <returns></returns>
+        public async Task<int> AlterBuyGoodsAll(int Userid)
+        {
+            int count = 0;
+            try
+            {
+
+                var buy = DB.BuyGoods.Where(t => t.UserId == Userid).ToList();
+
+                foreach (var b in buy)
+                {
+                    if (b.BuyStatus == 1)
+                    {
+                        b.BuyDateTime = DateTime.Now;
+                        b.BuyStatus = 2;
+                        DB.BuyGoods.Update(b);
+
+                        await Task.Run(() =>
+                        {
+                            count = DB.SaveChanges();
+
+                        });
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("获取错误信息：{0}", ex.Message.ToString());
+            }
+            return count;
+        }
 
         /// <summary>
         /// 显示购物车的商品
